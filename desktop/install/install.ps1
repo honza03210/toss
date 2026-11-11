@@ -1,8 +1,8 @@
 # Installs Toss for Windows into %LOCALAPPDATA%\Programs\Toss and starts it at login.
 # No administrator rights needed (except, optionally, for the firewall rule).
-#   irm https://github.com/OWNER/toss/releases/latest/download/install.ps1 | iex
+#   irm https://github.com/honza03210/toss/releases/latest/download/install.ps1 | iex
 $ErrorActionPreference = 'Stop'
-$repo = if ($env:TOSS_REPO) { $env:TOSS_REPO } else { 'OWNER/toss' }
+$repo = if ($env:TOSS_REPO) { $env:TOSS_REPO } else { 'honza03210/toss' }
 $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'amd64' }
 $asset = "toss-windows-$arch.zip"
 $base = if ($env:TOSS_BASE_URL) { $env:TOSS_BASE_URL } else { "https://github.com/$repo/releases/latest/download" }

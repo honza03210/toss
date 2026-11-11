@@ -1,8 +1,8 @@
 #!/bin/sh
 # Installs Toss for Linux or macOS into ~/.local/bin and starts it at login. No root needed.
-#   curl -fsSL https://github.com/OWNER/toss/releases/latest/download/install.sh | sh
+#   curl -fsSL https://github.com/honza03210/toss/releases/latest/download/install.sh | sh
 set -eu
-REPO="${TOSS_REPO:-OWNER/toss}"
+REPO="${TOSS_REPO:-honza03210/toss}"
 BIN_DIR="${TOSS_BIN_DIR:-$HOME/.local/bin}"
 
 case "$(uname -s)" in

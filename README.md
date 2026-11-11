@@ -36,11 +36,11 @@ Pairings live in a keychain item shared by the app and the extension: the
 Install (once published, see below):
 
 ```bash
-curl -fsSL https://github.com/OWNER/toss/releases/latest/download/install.sh | sh
+curl -fsSL https://github.com/honza03210/toss/releases/latest/download/install.sh | sh
 ```
 
 ```powershell
-irm https://github.com/OWNER/toss/releases/latest/download/install.ps1 | iex
+irm https://github.com/honza03210/toss/releases/latest/download/install.ps1 | iex
 ```
 
 These install for the current user (Linux: `~/.local/bin/toss`; Windows:

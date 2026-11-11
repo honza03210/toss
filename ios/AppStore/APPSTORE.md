@@ -56,7 +56,7 @@ requires an Xcode-compiled asset catalog and distribution signing, which xtool d
 
 **Keywords** (100): share,send,computer,pc,linux,windows,mac,transfer,photos,files,clipboard,backtap,desktop,link
 
-**Support URL:** https://OWNER.github.io/toss/ · **Privacy policy URL:** https://OWNER.github.io/toss/privacy.html
+**Support URL:** https://honza03210.github.io/toss/ · **Privacy policy URL:** https://honza03210.github.io/toss/privacy.html
 
 **Category:** Utilities (secondary: Productivity) · **Age rating:** 4+ (no objectionable content)
 
@@ -78,8 +78,8 @@ short screen recording of the whole flow if you can (it speeds review up a lot):
     open-source Toss desktop app (Linux, Windows or macOS).
 
     To test:
-    1. On a Windows PC, in PowerShell: irm https://github.com/OWNER/toss/releases/latest/download/install.ps1 | iex
-       (or on Linux: curl -fsSL https://github.com/OWNER/toss/releases/latest/download/install.sh | sh)
+    1. On a Windows PC, in PowerShell: irm https://github.com/honza03210/toss/releases/latest/download/install.ps1 | iex
+       (or on Linux: curl -fsSL https://github.com/honza03210/toss/releases/latest/download/install.sh | sh)
     2. Run: toss pair   — a QR code appears.
     3. Scan it with the iPhone camera, tap the banner, then Pair (allow Local Network access).
     4. In Photos or Safari, tap Share → Toss. The item appears on the computer as a notification.
