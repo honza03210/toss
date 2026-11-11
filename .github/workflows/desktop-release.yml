@@ -46,7 +46,10 @@ jobs:
           Scripts/build-desktop.sh ci
       - name: Serve the build
         shell: bash
-        run: (cd dist && (command -v python3 >/dev/null && python3 || python) -m http.server 8765 --bind 127.0.0.1 > /dev/null 2>&1 &) && sleep 2
+        run: |
+          py="$(command -v python3 || command -v python)"
+          (cd dist && "$py" -m http.server 8765 --bind 127.0.0.1 > /dev/null 2>&1 &)
+          sleep 2
       - name: Install (Linux, macOS)
         if: runner.os != 'Windows'
         env:
