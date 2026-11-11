@@ -1,0 +1,28 @@
+diff --git a/Sources/XKit/DeveloperServices/App IDs/Entitlements/EntitlementWithTeamOrBundleID.swift b/Sources/XKit/DeveloperServices/App IDs/Entitlements/EntitlementWithTeamOrBundleID.swift
+--- a/Sources/XKit/DeveloperServices/App IDs/Entitlements/EntitlementWithTeamOrBundleID.swift
++++ b/Sources/XKit/DeveloperServices/App IDs/Entitlements/EntitlementWithTeamOrBundleID.swift
+@@ -38,8 +38,24 @@ extension Entitlements {
+         let teamOrBundleIDSet = Set(teamOrBundleIDTypes.map(ObjectIdentifier.init))
+ 
+         try updateEntitlements { entitlements in
++            // Keep keychain groups the app asked for (e.g. one shared between an app and its
++            // extensions), resolving Xcode's $(AppIdentifierPrefix) placeholder to the team ID.
++            // Development profiles allow any group with the team prefix.
++            let prefix = "\(teamID.rawValue)."
++            let requested = entitlements
++                .compactMap { $0 as? KeychainAccessGroupsEntitlement }
++                .flatMap(\.rawValue)
++                .map { $0.replacingOccurrences(of: "$(AppIdentifierPrefix)", with: prefix) }
++                .filter { $0.hasPrefix(prefix) }
+             entitlements.removeAll { teamOrBundleIDSet.contains(ObjectIdentifier(type(of: $0))) }
+             entitlements += teamOrBundleIDTypes.map { $0.init(teamID: teamID, bundleID: bundleID) }
++            if let index = entitlements.firstIndex(where: { $0 is KeychainAccessGroupsEntitlement }),
++               var groups = entitlements[index] as? KeychainAccessGroupsEntitlement {
++                for group in requested where !groups.rawValue.contains(group) {
++                    groups.rawValue.append(group)
++                }
++                entitlements[index] = groups
++            }
+         }
+     }
+ 

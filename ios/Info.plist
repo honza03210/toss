@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key>
+    <string>Toss</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.honza.Toss.pair</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>toss</string>
+            </array>
+        </dict>
+    </array>
+    <key>NSCameraUsageDescription</key>
+    <string>Toss uses the camera to scan the pairing code your computer shows.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Toss saves photos and videos your computer sent to your library when you tap Save to Photos.</string>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Toss sends what you share straight to your computer on this network.</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+</dict>
+</plist>

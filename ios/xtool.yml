@@ -1,0 +1,14 @@
+version: 1
+bundleID: com.honza.Toss
+product: Toss
+infoPath: Info.plist
+iconPath: Icon.png
+entitlementsPath: Toss.entitlements
+resources:
+  - PrivacyInfo.xcprivacy
+extensions:
+  - product: TossShare
+    infoPath: TossShare-Info.plist
+    entitlementsPath: TossShare.entitlements
+    resources:
+      - PrivacyInfo.xcprivacy

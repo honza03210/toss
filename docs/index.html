@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toss: share from iPhone to your computer</title>
+<meta name="description" content="Share photos, links, text and files from any iPhone app straight to your Linux, Windows or Mac computer.">
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon.png" alt="">
+    <div>
+      <h1>Toss</h1>
+      <p class="tagline">Share anything from your iPhone to your Linux, Windows or Mac computer.</p>
+    </div>
+  </header>
+
+  <p>Tap <strong>Share → Toss</strong> on a photo, a web page, a note or a file, and it pops up on your
+  computer a second later: links open in the browser, text lands on the clipboard, photos and files
+  go to your Downloads folder.</p>
+  <p>Everything goes straight from your phone to your computer over your own network, encrypted.
+  There's no account and no cloud.</p>
+
+  <p>It works the other way too: right-click a file and choose <strong>Send to iPhone</strong>, or run
+  <code>toss send report.pdf</code>, and it's waiting in the Toss app the next time you open it. Back Tap
+  and Shortcuts can send your clipboard, and <code>toss web</code> opens a page with everything you've received.</p>
+
+  <h2>Set up in a minute</h2>
+  <ol class="steps">
+    <li><strong>Install Toss on your computer.</strong>
+      <div class="card">
+        <div>Linux or Mac: in a terminal</div>
+        <pre><code>curl -fsSL https://github.com/OWNER/toss/releases/latest/download/install.sh | sh</code></pre>
+        <div>Windows: in PowerShell</div>
+        <pre><code>irm https://github.com/OWNER/toss/releases/latest/download/install.ps1 | iex</code></pre>
+        <div class="muted">Installs for your user only and starts with your session. No administrator rights
+        needed (Windows asks once, if you agree, to let Toss through the firewall).
+        Or download it from the <a href="https://github.com/OWNER/toss/releases/latest">releases page</a>.</div>
+      </div>
+    </li>
+    <li><strong>Get the Toss app</strong> on your iPhone from the App Store.</li>
+    <li><strong>Pair:</strong> run <code>toss pair</code> on the computer and scan the QR code with the iPhone's
+      Camera. That's it: share something and pick Toss.</li>
+  </ol>
+
+  <h2>Questions</h2>
+  <div class="card">
+    <p><strong>The phone can't reach the computer.</strong> Both need to be on the same network. Some
+    networks (guest Wi-Fi, campus networks) block devices from talking to each other; a phone hotspot
+    works. Run <code>toss status</code> to check that Toss is running. With a firewall on Linux:
+    <code>sudo ufw allow 47800/tcp</code>.</p>
+    <p><strong>Toss isn't in the share sheet.</strong> Scroll the row of apps to the end, tap
+    <em>More</em> and turn Toss on.</p>
+    <p><strong>Where do files go?</strong> <code>Downloads/From iPhone</code>. Change it with
+    <code>toss config dir &lt;folder&gt;</code>; run <code>toss help</code> for all settings.</p>
+    <p><strong>Why does something sent from the computer wait until I open Toss?</strong> iPhones only let
+    apps receive in the background through Apple's push servers, and Toss doesn't use any server. Opening
+    Toss, or running its "Get Files from Computer" Shortcut (for example as an automation), picks everything up.</p>
+    <p><strong>Uninstall.</strong> <code>toss uninstall</code>, then delete the program
+    (<code>~/.local/bin/toss</code> or <code>%LOCALAPPDATA%\Programs\Toss</code>).</p>
+  </div>
+
+  <h2>Support</h2>
+  <p>Found a bug or have an idea? <a href="https://github.com/OWNER/toss/issues">Open an issue on GitHub</a>.</p>
+
+  <footer>
+    <a href="privacy.html">Privacy</a> · <a href="https://github.com/OWNER/toss">Source code</a>
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,11 @@
+.DS_Store
+/dist
+/desktop/toss
+/desktop/toss.exe
+/desktop/tossw.exe
+__pycache__/
+/ios/.build
+/ios/.bsp
+/ios/xtool
+/ios/.swiftpm
+/desktop/assets/*.ico

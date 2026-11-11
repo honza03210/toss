@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toss</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #17181c; --muted: #6b7080; --line: #e3e5ea;
+    --accent: #2f6df6; --accent-text: #fff; --danger: #c93636; --soft: #eef3ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121317; --card: #1c1e24; --text: #eceef3; --muted: #9298a8; --line: #2c2f38;
+      --accent: #5b8cff; --accent-text: #0b1020; --danger: #ff7a7a; --soft: #1f2a44;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Cantarell, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  header h1 { font-size: 22px; margin: 0; }
+  header .sub { color: var(--muted); }
+  header .spacer { flex: 1; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+  h2 { font-size: 16px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  h2 .spacer { flex: 1; }
+  button, .button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 9px; padding: 6px 12px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  button:hover, .button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button.link { border: none; background: none; color: var(--muted); padding: 4px 6px; }
+  .drop { border: 2px dashed var(--line); border-radius: 12px; padding: 18px; text-align: center; color: var(--muted); transition: .15s; }
+  .drop.over { border-color: var(--accent); background: var(--soft); color: var(--text); }
+  .row { display: flex; gap: 10px; margin-top: 12px; }
+  textarea { flex: 1; min-height: 44px; resize: vertical; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li.item { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  li.item:first-child { border-top: none; }
+  .thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--bg); flex: none; display: grid; place-items: center; color: var(--muted); font-size: 22px; }
+  .body { flex: 1; min-width: 0; }
+  .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .text { white-space: pre-wrap; word-break: break-word; max-height: 4.4em; overflow: hidden; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .empty { color: var(--muted); padding: 6px 0; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .error { background: var(--danger); color: #fff; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; }
+  dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--text); max-width: 380px; width: calc(100% - 32px); padding: 22px; }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  .qr { background: #fff; border-radius: 12px; padding: 8px; }
+  .qr svg { display: block; width: 100%; height: auto; }
+  code { font-size: 12px; word-break: break-all; color: var(--muted); }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: 20px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  @media (max-width: 560px) { li.item { flex-wrap: wrap; } .actions { width: 100%; justify-content: flex-start; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Toss</h1>
+    <span class="sub" id="computer"></span>
+    <span class="spacer"></span>
+    <button id="folder">Received folder</button>
+    <button class="primary" id="pair">Pair an iPhone</button>
+  </header>
+  <div class="error" id="error" hidden></div>
+
+  <section>
+    <h2>Send to iPhone</h2>
+    <div class="drop" id="drop">Drop files here, or <button id="pick">choose files</button><input type="file" id="files" multiple hidden></div>
+    <div class="row">
+      <textarea id="text" placeholder="Text or a link"></textarea>
+      <button class="primary" id="sendText">Send</button>
+    </div>
+    <p class="note">Items wait here until you open Toss on the iPhone (or run its “Get Files from Computer” Shortcut). They’re removed after 7 days.</p>
+    <ul id="outbox"></ul>
+  </section>
+
+  <section>
+    <h2>Received <span class="spacer"></span><button class="link" id="clear">Clear list</button></h2>
+    <ul id="history"></ul>
+  </section>
+
+  <section>
+    <h2>Paired phones</h2>
+    <ul id="devices"></ul>
+  </section>
+</main>
+
+<dialog id="pairDialog">
+  <h2>Scan with the iPhone’s Camera</h2>
+  <div class="qr" id="qr"></div>
+  <p class="note">Or open this link on the iPhone:<br><code id="pairLink"></code></p>
+  <p class="note">The code works once and expires in 10 minutes.</p>
+  <div class="row" style="justify-content:flex-end"><button id="closePair">Close</button></div>
+</dialog>
+<div id="toast"></div>
+
+<script>
+(() => {
+  // The token arrives in the URL fragment (never sent to a server) and stays in this tab.
+  let token = location.hash.slice(1);
+  try {
+    if (token) sessionStorage.setItem("toss-token", token);
+    else token = sessionStorage.getItem("toss-token") || "";
+  } catch (e) {}
+  if (location.hash) history.replaceState(null, "", location.pathname);
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, props = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+      if (k === "class") e.className = v;
+      else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v);
+    }
+    for (const kid of kids) if (kid != null) e.append(kid);
+    return e;
+  };
+
+  async function api(method, path, body, type) {
+    const headers = { "X-Toss-Web": token };
+    if (type) headers["Content-Type"] = type;
+    const res = await fetch(path, { method, headers, body });
+    if (!res.ok) {
+      let msg = res.statusText;
+      try { msg = (await res.json()).error || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    return res;
+  }
+  const json = async (method, path, body, type) => (await api(method, path, body, type)).json();
+
+  function showError(err) {
+    $("error").textContent = err ? String(err.message || err) : "";
+    $("error").hidden = !err;
+  }
+  let toastTimer;
+  function toast(text) {
+    $("toast").textContent = text;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $("toast").classList.remove("show"), 1800);
+  }
+
+  const size = (n) => n >= 1 << 30 ? (n / (1 << 30)).toFixed(1) + " GB" : n >= 1 << 20 ? Math.round(n / (1 << 20)) + " MB" : n >= 1024 ? Math.round(n / 1024) + " KB" : n + " B";
+  const when = (iso) => {
+    const d = new Date(iso), now = new Date();
+    const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return d.toDateString() === now.toDateString() ? time : d.toLocaleDateString([], { month: "short", day: "numeric" }) + ", " + time;
+  };
+  const baseName = (p) => p.split(/[\\/]/).pop();
+  const isImage = (p) => /\.(jpe?g|png|gif|webp|bmp)$/i.test(p);
+
+  const thumbs = new Map(); // path → blob URL
+  async function thumb(path, img) {
+    if (thumbs.has(path)) { img.src = thumbs.get(path); return; }
+    try {
+      const blob = await (await api("GET", "/api/file?path=" + encodeURIComponent(path))).blob();
+      const url = URL.createObjectURL(blob);
+      thumbs.set(path, url);
+      img.src = url;
+    } catch (e) { img.replaceWith(el("div", { class: "thumb" }, "🖼")); }
+  }
+
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); toast("Copied"); }
+    catch (e) { showError("The browser didn’t allow copying."); }
+  }
+  async function post(path, filePath) {
+    try { await json("POST", path, JSON.stringify({ path: filePath }), "application/json"); }
+    catch (e) { showError(e); }
+  }
+
+  function historyItem(e) {
+    const meta = el("div", { class: "meta" }, `${when(e.time)} · from ${e.device}`);
+    if (e.kind === "file") {
+      const name = baseName(e.path);
+      const visual = isImage(name) ? el("img", { class: "thumb", alt: "" }) : el("div", { class: "thumb" }, "📄");
+      if (isImage(name)) thumb(e.path, visual);
+      if (e.size) meta.append(" · " + size(e.size));
+      return el("li", { class: "item" }, visual,
+        el("div", { class: "body" }, el("div", { class: "title" }, name), meta),
+        el("div", { class: "actions" },
+          el("button", { onclick: () => post("/api/open", e.path) }, "Open"),
+          el("button", { onclick: () => post("/api/show", e.path) }, "Show in folder")));
+    }
+    if (e.kind === "url") {
+      return el("li", { class: "item" }, el("div", { class: "thumb" }, "🔗"),
+        el("div", { class: "body" }, el("div", { class: "title" }, e.text), meta),
+        el("div", { class: "actions" },
+          el("a", { class: "button", href: e.text, target: "_blank", rel: "noopener noreferrer" }, "Open"),
+          el("button", { onclick: () => copy(e.text) }, "Copy")));
+    }
+    return el("li", { class: "item" }, el("div", { class: "thumb" }, "📝"),
+      el("div", { class: "body" }, el("div", { class: "text" }, e.text), meta),
+      el("div", { class: "actions" }, el("button", { onclick: () => copy(e.text) }, "Copy")));
+  }
+
+  function outboxItem(it) {
+    const label = it.kind === "file" ? it.name : it.text;
+    const icon = it.kind === "file" ? "📄" : it.kind === "url" ? "🔗" : "📝";
+    return el("li", { class: "item" }, el("div", { class: "thumb" }, icon),
+      el("div", { class: "body" }, el("div", { class: "title" }, label),
+        el("div", { class: "meta" }, `Waiting since ${when(it.created)}` + (it.kind === "file" ? " · " + size(it.size) : ""))),
+      el("div", { class: "actions" }, el("button", {
+        onclick: async () => { try { await api("DELETE", "/api/outbox/" + it.id); refresh(); } catch (e) { showError(e); } },
+      }, "Cancel")));
+  }
+
+  let lastKey = "", deviceCount = -1;
+  async function refresh() {
+    let s;
+    try { s = await json("GET", "/api/state"); }
+    catch (e) {
+      showError(token ? e : "Open this page with the command `toss web` (it carries the page’s key).");
+      return;
+    }
+    showError(null);
+    $("computer").textContent = `${s.computerName} · files go to ${s.saveDir}`;
+    if (deviceCount >= 0 && s.devices.length > deviceCount && $("pairDialog").open) {
+      $("pairDialog").close();
+      toast("Paired with " + s.devices[0].name);
+    }
+    deviceCount = s.devices.length;
+    const key = JSON.stringify([s.history.length && s.history[0].time, s.history.length, s.outbox.map((o) => o.id), s.devices.map((d) => d.name + d.lastSeen)]);
+    if (key === lastKey) return;
+    lastKey = key;
+    $("history").replaceChildren(...(s.history.length ? s.history.map(historyItem) : [el("li", { class: "empty" }, "Nothing yet. Share something to Toss on the iPhone.")]));
+    $("outbox").replaceChildren(...s.outbox.map(outboxItem));
+    $("devices").replaceChildren(...(s.devices.length ? s.devices.map((d) =>
+      el("li", { class: "item" }, el("div", { class: "thumb" }, "📱"),
+        el("div", { class: "body" }, el("div", { class: "title" }, d.name),
+          el("div", { class: "meta" }, `Paired ${when(d.paired)}` + (d.lastSeen && !d.lastSeen.startsWith("0001") ? ` · last used ${when(d.lastSeen)}` : ""))))) :
+      [el("li", { class: "empty" }, "No phones yet: press “Pair an iPhone”.")]));
+  }
+
+  async function sendFiles(list) {
+    for (const f of list) {
+      try {
+        toast("Adding " + f.name + "…");
+        await api("POST", "/api/send/file?name=" + encodeURIComponent(f.name), f, "application/octet-stream");
+      } catch (e) { showError(e); return; }
+    }
+    toast(list.length === 1 ? "Ready for the iPhone" : `${list.length} files ready for the iPhone`);
+    refresh();
+  }
+
+  $("pick").onclick = () => $("files").click();
+  $("files").onchange = () => { sendFiles([...$("files").files]); $("files").value = ""; };
+  const drop = $("drop");
+  ["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => { if (e.dataTransfer.files.length) sendFiles([...e.dataTransfer.files]); });
+  $("sendText").onclick = async () => {
+    const text = $("text").value;
+    if (!text.trim()) return;
+    try { await json("POST", "/api/send/text", text, "text/plain;charset=utf-8"); $("text").value = ""; toast("Ready for the iPhone"); refresh(); }
+    catch (e) { showError(e); }
+  };
+  $("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("sendText").click(); });
+  $("clear").onclick = async () => { try { await api("DELETE", "/api/history"); refresh(); } catch (e) { showError(e); } };
+  $("folder").onclick = async () => { try { await api("POST", "/api/folder"); } catch (e) { showError(e); } };
+  $("pair").onclick = async () => {
+    try {
+      const p = await json("POST", "/api/pair");
+      $("qr").innerHTML = p.svg; // generated by toss itself: a plain SVG of rectangles
+      $("pairLink").textContent = p.link;
+      $("pairDialog").showModal();
+    } catch (e) { showError(e); }
+  };
+  $("closePair").onclick = () => $("pairDialog").close();
+
+  refresh();
+  setInterval(refresh, 3000);
+  if (location.search.includes("pair")) $("pair").click();
+})();
+</script>
+</body>
+</html>

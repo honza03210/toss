@@ -1,0 +1,86 @@
+# Tests the desktop companion on every push; on a v* tag, builds it for Linux and Windows
+# and publishes a GitHub Release with the installers (install.sh / install.ps1).
+name: Desktop
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: desktop/go.mod
+      - name: Test
+        working-directory: desktop
+        run: go vet ./... && go test ./...
+
+  # Installs from freshly built archives (served locally) on real Linux and Windows machines.
+  installer:
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: desktop/go.mod
+      - name: Build
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then choco install zip -y --no-progress >/dev/null; sha256sum --version >/dev/null; fi
+          Scripts/build-desktop.sh ci
+      - name: Serve the build
+        shell: bash
+        run: (cd dist && (command -v python3 >/dev/null && python3 || python) -m http.server 8765 --bind 127.0.0.1 > /dev/null 2>&1 &) && sleep 2
+      - name: Install (Linux, macOS)
+        if: runner.os != 'Windows'
+        env:
+          TOSS_BASE_URL: http://127.0.0.1:8765
+        run: |
+          sh dist/install.sh
+          ~/.local/bin/toss status
+          ~/.local/bin/toss status | grep -q "running on port"
+          ~/.local/bin/toss uninstall
+      - name: Install (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        env:
+          TOSS_BASE_URL: http://127.0.0.1:8765
+          TOSS_FIREWALL: skip
+        run: |
+          irm "$env:TOSS_BASE_URL/install.ps1" | iex
+          $toss = Join-Path $env:LOCALAPPDATA 'Programs\Toss\toss.exe'
+          & $toss status
+          if (-not ((& $toss status) -match 'running on port')) { throw 'Toss is not running after install' }
+          & $toss uninstall
+
+  release:
+    needs: [test, installer]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: desktop/go.mod
+      - name: Build
+        env:
+          TOSS_REPO: ${{ github.repository }}
+        run: Scripts/build-desktop.sh "${GITHUB_REF_NAME#v}"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "Toss $GITHUB_REF_NAME" --generate-notes

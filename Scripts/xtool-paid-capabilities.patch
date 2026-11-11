@@ -1,0 +1,81 @@
+diff --git a/Sources/XKit/DeveloperServices/App IDs/DeveloperServicesAddAppOperation.swift b/Sources/XKit/DeveloperServices/App IDs/DeveloperServicesAddAppOperation.swift
+index d726e91..9547fe9 100644
+--- a/Sources/XKit/DeveloperServices/App IDs/DeveloperServicesAddAppOperation.swift	
++++ b/Sources/XKit/DeveloperServices/App IDs/DeveloperServicesAddAppOperation.swift	
+@@ -111,7 +111,7 @@ public struct DeveloperServicesAddAppOperation: DeveloperServicesOperation {
+                     )
+                     .ok
+                 }
+-            } else {
++            } else if isFreeTeam {
+                 // DeveloperServices doesn't allow deleting these capabilities
+                 let requiredCapabilities: Set<Components.Schemas.CapabilityType.Value1Payload> = [.inAppPurchase]
+                 if let capType = cap.attributes?.capabilityType?.value1, !requiredCapabilities.contains(capType) {
+@@ -120,6 +120,8 @@ public struct DeveloperServicesAddAppOperation: DeveloperServicesOperation {
+                         .noContent
+                 }
+             }
++            // On paid teams, keep capabilities enabled by hand in the developer portal
++            // (for example WeatherKit, which the API can't create).
+         }
+         for (typ, settings) in wantedCapabilities {
+             guard existingCapabilities[typ] == nil else { continue }
+diff --git a/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift b/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift
+index 1d12254..b76ae7b 100644
+--- a/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift	
++++ b/Sources/XKit/DeveloperServices/App IDs/Entitlements/DeveloperServicesCapability.swift	
+@@ -160,3 +160,15 @@ extension WiFiAwareEntitlement: EntitlementWithCapability {
+         DeveloperServicesCapability(rawName: "WIFI_AWARE", isFree: false)
+     }
+ }
++
++extension NFCTagReadingEntitlement: EntitlementWithCapability {
++    var capability: DeveloperServicesCapability {
++        DeveloperServicesCapability(.nfcTagReading, isFree: false)
++    }
++}
++
++extension WiFiInfoEntitlement: EntitlementWithCapability {
++    var capability: DeveloperServicesCapability {
++        DeveloperServicesCapability(.accessWifiInformation, isFree: false)
++    }
++}
+diff --git a/Sources/XKit/Model/Entitlements/EntitlementTypes.swift b/Sources/XKit/Model/Entitlements/EntitlementTypes.swift
+index 7bc1ea5..c121331 100644
+--- a/Sources/XKit/Model/Entitlements/EntitlementTypes.swift
++++ b/Sources/XKit/Model/Entitlements/EntitlementTypes.swift
+@@ -30,6 +30,8 @@ extension EntitlementContainer {
+         HomeKitEntitlement.self,
+         HealthKitEntitlement.self,
+         AppleSignInEntitlement.self,
++        NFCTagReadingEntitlement.self,
++        WiFiInfoEntitlement.self,
+     ]
+ }
+ 
+@@ -200,3 +202,25 @@ public struct HealthKitEntitlement: Entitlement, RawRepresentable {
+     public var rawValue: Bool
+     public init(rawValue: Bool) { self.rawValue = rawValue }
+ }
++
++public struct NFCTagReadingEntitlement: Entitlement, RawRepresentable {
++    public static let identifier = "com.apple.developer.nfc.readersession.formats"
++
++    public var rawValue: [String]
++    public init(rawValue: [String]) { self.rawValue = rawValue }
++
++    public init(from decoder: Decoder) throws {
++        rawValue = try decoder.singleValueContainer().decode([String].self)
++    }
++    public func encode(to encoder: Encoder) throws {
++        var container = encoder.singleValueContainer()
++        try container.encode(rawValue)
++    }
++}
++
++public struct WiFiInfoEntitlement: Entitlement, RawRepresentable {
++    public static let identifier = "com.apple.developer.networking.wifi-info"
++
++    public var rawValue: Bool
++    public init(rawValue: Bool) { self.rawValue = rawValue }
++}
