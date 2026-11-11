@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -52,7 +53,7 @@ func TestResumableUpload(t *testing.T) {
 	if resp.StatusCode != 200 {
 		t.Fatalf("resume: %d", resp.StatusCode)
 	}
-	got, err := os.ReadFile(dir + "/clip.mov")
+	got, err := os.ReadFile(filepath.Join(dir, "clip.mov"))
 	if err != nil || !bytes.Equal(got, data) {
 		t.Fatalf("file differs (%d bytes, %v)", len(got), err)
 	}
@@ -78,7 +79,7 @@ func TestCaptureTimeAndHistory(t *testing.T) {
 	}
 	send(t, ts, key, "text", "", []byte("hello"), nil)
 	h := store.History()
-	if len(h) != 2 || h[0].Kind != "text" || h[0].Text != "hello" || h[1].Path != dir+"/IMG_1.jpg" || h[1].Device != "Hiha" || h[1].Size != 4 {
+	if len(h) != 2 || h[0].Kind != "text" || h[0].Text != "hello" || h[1].Path != filepath.Join(dir, "IMG_1.jpg") || h[1].Device != "Hiha" || h[1].Size != 4 {
 		t.Fatalf("history %+v", h)
 	}
 }
