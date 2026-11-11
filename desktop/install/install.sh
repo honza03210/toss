@@ -21,7 +21,7 @@ base="${TOSS_BASE_URL:-https://github.com/$REPO/releases/latest/download}"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-echo "Downloading $asset…"
+echo "Downloading ${asset}…"
 curl -fsSL "$base/$asset" -o "$tmp/$asset"
 curl -fsSL "$base/checksums.txt" -o "$tmp/checksums.txt"
 if command -v sha256sum >/dev/null 2>&1; then sha="sha256sum -c --quiet -"; else sha="shasum -a 256 -c --quiet -"; fi
