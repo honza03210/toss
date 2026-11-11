@@ -17,10 +17,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version-file: desktop/go.mod
+          go-version: stable
+          cache: false # no dependencies, so nothing to cache
       - name: Test
         working-directory: desktop
         run: go vet ./... && go test ./...
@@ -33,10 +34,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version-file: desktop/go.mod
+          go-version: stable
+          cache: false # no dependencies, so nothing to cache
       - name: Build
         shell: bash
         run: |
@@ -72,10 +74,11 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version-file: desktop/go.mod
+          go-version: stable
+          cache: false # no dependencies, so nothing to cache
       - name: Build
         env:
           TOSS_REPO: ${{ github.repository }}
