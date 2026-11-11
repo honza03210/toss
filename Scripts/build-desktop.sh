@@ -32,5 +32,6 @@ for f in install.sh install.ps1; do
   if [ -n "$repo" ]; then sed "s#OWNER/toss#$repo#g" "install/$f" > "$dist/$f"; else cp "install/$f" "$dist/$f"; fi
 done
 if command -v sha256sum >/dev/null; then sum=sha256sum; else sum="shasum -a 256"; fi
-(cd "$dist" && $sum toss-* > checksums.txt)
+# Git Bash on Windows marks binary mode with "*"; keep the plain "hash  name" format.
+(cd "$dist" && $sum toss-* | sed 's/ \*/  /' > checksums.txt)
 ls -la "$dist"
